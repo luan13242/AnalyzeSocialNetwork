@@ -2,10 +2,17 @@ Use Girvan-Newman Algorithm (Java Graph)and R To Identify and Study Facebook Com
 =======
 
 Overview
-This is the cap stone project for “Java programming: Object-Oriented Design of Data Structures”.  In this cap stone project, a Java graph class is developed to study a number of graph problems.  I chose to implement an algorithm to identify communities in graph data.
-Two graph data sets are used for this project.  One is a testing data set I created.  The other is the Facebook data of Amherst College on Sep. 2005.
+--------
+
+This is the cap stone project for “Java programming: Object-Oriented Design of Data Structures”.  In this cap stone project, a Java graph class is developed to study a number of graph problems.  I chose to implement the Girvan-Newman Betweenness algorithm to identify communities in graph data.
+
+The graph data sets are used for this project are:
+*  A testing data set I created that resembles four connected snowflakes
+*  Facebook snapshot data of Amherst College on Sep. 2005
+*  Facebook snapshot data of Caltech on Sep. 2005
 
 Data
+----
 “Facebook Data Scrape (2005)” is obtained from the site: https://github.com/caesar0301/awesome-public-datasets#social-networks.  
 I downloaded the data as a zip file.  
 The documentation of the zip file said: “This .zip file contains the Facebook networks (from a date in Sept. 2005) for 100 colleges and universities.  These files only include intra-school links.  (Note that these are the full sets of links inside each school, ignoring isolated nodes; we have not restricted this data to the largest connected components.)”
