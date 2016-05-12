@@ -38,7 +38,7 @@ caltech36.mat contains two elements:
 *	An element named “local_info” has seven attributes describing each vertex (person) on the graph.  
 It is the smallest dataset out of the 100 university data.
 
-The .mat file is first read into R (a free framework for statistical analysis), and then exported as a matrix text file so that the Java file loader can read.  See PARSE_SOCIAL_NETWORK_DATA_4_JAVA.R in R_scripts folder within src folder.
+The .mat file is first read into R (a free framework for statistical analysis), and then exported as a matrix text file so that the Java file loader can read.  See **PARSE_SOCIAL_NETWORK_DATA_4_JAVA.R** in src/R_scripts folder for details.
 
 Then, I used the getSCCs (strongly connected components) mthod from CapGraph class to make sure all vertices are connected.  Amherst data is one connected graph.  Caltech data has four connected graphs.
 
@@ -46,17 +46,18 @@ As a footnote, it is hard to obtain real network data.  I am not a heavy Twitter
 I did convert all the .mat files from all universities to Java readable format.  This activity took about five days.  One of the university data (not Amherst) seemed to be corrupted.
 
 Questions – Answers – How I did it (Algorithm and Data Structure)
-1.	(Easy question) What is the general nature of Amherst Facebook data?
+-----------------------------------------------------------------
+### 1.	(Easy question) What is the general nature of Amherst or Caltech Facebook data?
 These answers are obtained by using R (script on GitHub):
-a)	It is a single SCC: all vertices are connected.  It is also non-directional: linkage is a pair, e.g. vertex 1 to vertex 21, and vertex 21 to vertex 1.
-b)	2235 vertices and 90952 edges.
-c)	Student/faculty flag has 1653 counts of 1s, 553 counts of 2s, 3 counts of 6, 4 counts of 15 and 5 counts of 8.  1 = student.  2 = (maybe) faculty.  I did not find the code book, therefore not sure the code meaning.  I am assuming the dominant group is the student group.
-d)	Gender: 203 counts of 0 (missing data), 1015 of 1s and 1017 of 2s.  I assume 1 is male, 2 is female.
-e)	Major: there are 29 majors.  Some majors are more popular, such as 94, 99, 100, 106, 113, 114.  But, the highest group is the undeclared (0 has 582 counts).
-f)	Minor: there are 30 minor categories.  99, 113 are popular minors.  Overwhelming majority doesn’t have a minor (0 has 1370 counts).
-g)	Dorm/house: there are 34 different dorm/houses.  Big majority are not in any housing: 0 has 945 counts.
-h)	Students came from a large number of different high schools.  No high school dominates.
-i)	Year: This data was collected in 2005.  The year may be graduation year.  Majority of the year counts are:
+* a)	It is a single SCC: all vertices are connected.  It is also non-directional: linkage is a pair, e.g. vertex 1 to vertex 21, and vertex 21 to vertex 1.
+* b)	2235 vertices and 90952 edges.
+* c)	Student/faculty flag has 1653 counts of 1s, 553 counts of 2s, 3 counts of 6, 4 counts of 15 and 5 counts of 8.  1 = student.  2 = (maybe) faculty.  I did not find the code book, therefore not sure the code meaning.  I am assuming the dominant group is the student group.
+* d)	Gender: 203 counts of 0 (missing data), 1015 of 1s and 1017 of 2s.  I assume 1 is male, 2 is female.
+* e)	Major: there are 29 majors.  Some majors are more popular, such as 94, 99, 100, 106, 113, 114.  But, the highest group is the undeclared (0 has 582 counts).
+* f)	Minor: there are 30 minor categories.  99, 113 are popular minors.  Overwhelming majority doesn’t have a minor (0 has 1370 counts).
+* g)	Dorm/house: there are 34 different dorm/houses.  Big majority are not in any housing: 0 has 945 counts.
+* h)	Students came from a large number of different high schools.  No high school dominates.
+* i)	Year: This data was collected in 2005.  The year may be graduation year.  Majority of the year counts are:
 2008	380
 2009 	377
 2007 	363
@@ -65,7 +66,7 @@ i)	Year: This data was collected in 2005.  The year may be graduation year.  Maj
 2004	147
 0		214
 
-2.	(Hard question) What are the communities among Amherst students on Facebook?  And, what are the characteristics of each community, such as gender, major, high school, etc.?  
+### 2.	(Hard question) What are the communities among Amherst or Caltech students on Facebook?  
 Algorithm for identifying communities
 I am using the “outside-in” method to identify communities.  The core idea of this algorithm is to think that the linkages from one community to another are limited.  For example, only a few highways linking one city to another, whereas there are many small roads connecting everyone within a community.
 These steps are taken to identify the “highways”, i.e. most frequently used edges:
