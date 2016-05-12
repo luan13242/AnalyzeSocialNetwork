@@ -4,23 +4,39 @@ Use Girvan-Newman Algorithm (Java Graph)and R To Identify and Study Facebook Com
 Overview
 --------
 
-This is the cap stone project for “Java programming: Object-Oriented Design of Data Structures”.  In this cap stone project, a Java graph class is developed to study a number of graph problems.  I chose to implement the Girvan-Newman Betweenness algorithm to identify communities in graph data.
+This is the cap stone project for “Java programming: Object-Oriented Design of Data Structures” on COURSERA.ORG.  In this cap stone project, a Java graph class is developed to study a number of graph problems.  I chose to implement the Girvan-Newman Betweenness algorithm to identify communities in graph data.
 
-The graph data sets are used for this project are:
+The graph data sets used for this project are:
 *  A testing data set I created that resembles four connected snowflakes
 *  Facebook snapshot data of Amherst College on Sep. 2005
 *  Facebook snapshot data of Caltech on Sep. 2005
 
 Data
 ----
-“Facebook Data Scrape (2005)” is obtained from the site: https://github.com/caesar0301/awesome-public-datasets#social-networks.  
+Amherst and Caltech data are obtained from the “Facebook Data Scrape (2005)” at the site: https://github.com/caesar0301/awesome-public-datasets#social-networks.  
+
 I downloaded the data as a zip file.  
-The documentation of the zip file said: “This .zip file contains the Facebook networks (from a date in Sept. 2005) for 100 colleges and universities.  These files only include intra-school links.  (Note that these are the full sets of links inside each school, ignoring isolated nodes; we have not restricted this data to the largest connected components.)”
-The Facebook data for each school is in a file of LABMAT format (.mat).  There 100 .mat files for 100 schools.  I took Amherst41.mat for analysis.
+
+There a hundred and one .mat (MATLAB format) files in the zip where one file seems to be corrupted. Each .mat file contains the intra-school links (the graph) and attributes of each vertex (person on Facebook).  The attributes are: 
+* a student/faculty status flag
+* gender
+* major
+* second major/monor
+* dorm/house
+* year
+* high school
+Missing data is coded 0.  I have not found the explanation of all the other codes.  I made some guesses in my analysis.  For the purpose of this study, exact meaning of the code doesn't matter.
+
 Amherst41.mat contains two elements:
-•	An element named “A” is a sparse matrix representing the Facebook connection (graph) of people.  
-•	An element named “local_info” has seven attributes describing each vertex (person) on the graph.  The attributes are: a student/faculty status flag, gender, major, second major/monor, dorm/house, year, high school.  Missing data is coded 0.
-Amherst data has 2235 vertices and 90954 edges.  The graph is non-directional.  It is the 4th smallest dataset out of the 100 university data.
+*	An element named “A” is a sparse matrix representing the Facebook connection (graph) of people, with 2235 vertices and 90954 edges.
+*	An element named “local_info” has seven attributes describing each vertex (person) on the graph.  
+It is the 4th smallest dataset out of the 100 university data.
+
+caltech36.mat contains two elements:
+*	An element named “A” is a sparse matrix representing the Facebook connection (graph) of people, with 769 vertices and 33312 edges.
+*	An element named “local_info” has seven attributes describing each vertex (person) on the graph.  
+It is the smallest dataset out of the 100 university data.
+
 The .mat file is first read into R (a free framework for statistical analysis), and then exported as a matrix text file so that our Java file loader can read.  R code is below:
 ####################################
 # Analyze Facebook data using Java/R
