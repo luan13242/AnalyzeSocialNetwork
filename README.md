@@ -25,6 +25,7 @@ There a hundred and one .mat (MATLAB format) files in the zip where one file see
 * dorm/house
 * year
 * high school
+
 Missing data is coded 0.  I have not found the explanation of all the other codes.  I made some guesses in my analysis.  For the purpose of this study, exact meaning of the code doesn't matter.
 
 Amherst41.mat contains two elements:
@@ -37,58 +38,12 @@ caltech36.mat contains two elements:
 *	An element named “local_info” has seven attributes describing each vertex (person) on the graph.  
 It is the smallest dataset out of the 100 university data.
 
-The .mat file is first read into R (a free framework for statistical analysis), and then exported as a matrix text file so that our Java file loader can read.  R code is below:
-####################################
-# Analyze Facebook data using Java/R
-####################################
-# author: Lu
-# date: April 2016
-# Version2: save graph connection matrix as a csv file
-library(R.matlab)
-# path to .mat data
-path <- c("C:\\Users\\LU\\java_workspace\\SocialNetworks\\data\\facebook100\\facebook100")
-# get list of school filenames
-schools <- read.csv("C:\\Users\\LU\\java_workspace\\SocialNetworks\\data\\facebook100\\facebook100\\school_list.txt", header = TRUE, stringsAsFactors = FALSE)
-# outfile captures info on each school:
-# node counts
-# edge counts
-outfile = paste(path, "school_info.csv", sep = "\\")
-cat(paste("school", "node", "edge", "\n", sep = ","), 
-    file = outfile, 
-    fill = FALSE, 
-    append = TRUE)
-for (i in c(1:nrow(schools))) {
-    # read input file, schools$SCHOOL_NAME[i] one of it has value "Amherst41.mat"
-  data <- readMat(paste(path, schools$SCHOOL_NAME[i], sep = "\\"))
-    # sparse vertex connection matrix
-  A <- as.matrix(data$A)
-    graph_input = paste(path, schools$SCHOOL_NAME[i], sep = "\\")
-  graph_output = sub(".mat", ".csv", graph_input)
- # convert connection matrix A to Excel format so that it will be converted to the Java
- # loader format.  I can directly convert this to Java loader format in R.  Didn’t do
- # so because the Java code was already written.
-  write.csv(A, file = graph_output, row.names = FALSE, col.names = FALSE)
-    edge_info <- as.data.frame(table(A))
-  # matrix A should only have values 0 (no connection) and 1 (connection)
- # when it has more than just 0 and 1, something is wrong with this data
-  if (nrow(edge_info) > 2) {
-    print(schools$SCHOOL_NAME[i])
-    print("data corrupted")
-    break
-  }
-    cat(paste(schools$SCHOOL_NAME[i], nrow(A), edge_info[2,"Freq"], "\n", sep = ","), 
-        file = outfile, 
-        fill = FALSE, 
-        append = TRUE)
-}
+The .mat file is first read into R (a free framework for statistical analysis), and then exported as a matrix text file so that the Java file loader can read.  See PARSE_SOCIAL_NETWORK_DATA_4_JAVA.R in R_scripts folder within src folder.
 
-Then, I used the CapGraph class developed in week one to compute SCC to make sure all vertices are connected.  And, they are.
+Then, I used the getSCCs (strongly connected components) mthod from CapGraph class to make sure all vertices are connected.  Amherst data is one connected graph.  Caltech data has four connected graphs.
+
 As a footnote, it is hard to obtain real network data.  I am not a heavy Twitter or Facebook user.  So, there is not much social network data on me.  I do connect to a lot of people on LinkedIn.  But, it is a professional network and the connections have a different meaning.  I am very grateful to the people who made Facebook Data Scrape (2005) data available to public.  
 I did convert all the .mat files from all universities to Java readable format.  This activity took about five days.  One of the university data (not Amherst) seemed to be corrupted.
-
-The testing data set is 4 clusters (snowflakes) connected only via the center vertices.
- 
-
 
 Questions – Answers – How I did it (Algorithm and Data Structure)
 1.	(Easy question) What is the general nature of Amherst Facebook data?
