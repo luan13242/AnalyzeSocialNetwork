@@ -1,4 +1,5 @@
-Use A Self Developed Java Graph Class and R To Identify and Study Communities in Amherst College Facebook Snapshot (Sep. 2005) Data
+Use A Self Developed Java Graph Class and R To Identify and Study Communities in Amherst and Caltech Colleges Facebook Snapshot (Sep. 2005) Data
+=======
 
 Overview
 This is the cap stone project for “Java programming: Object-Oriented Design of Data Structures”.  In this cap stone project, a Java graph class is developed to study a number of graph problems.  I chose to implement an algorithm to identify communities in graph data.
