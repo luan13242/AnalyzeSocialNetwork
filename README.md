@@ -1,4 +1,4 @@
-Use A Self Developed Java Graph Class and R To Identify and Study Communities in Amherst and Caltech Colleges Facebook Snapshot (Sep. 2005) Data
+Use Girvan-Newman Algorithm (Java Graph)and R To Identify and Study Facebook Communities in Colleges
 =======
 
 Overview
