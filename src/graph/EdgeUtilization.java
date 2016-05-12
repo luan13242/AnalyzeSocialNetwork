@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author LU
@@ -29,26 +30,20 @@ public class EdgeUtilization {
 	private HashMap<String, Integer> edge_utilization_chart;
 	
 	// most_often_used_edges is to track the top set of edges that are used most often
-	private HashMap<Integer, HashSet<String>> most_often_used_edges;
+	private HashSet<String> most_often_used_edges;
 	
 	// most_used_edges_computed is a flag to indicate if most_often_used_edges need to be (re)computed
 	private boolean most_used_edges_computed;
 	
-	// a maximum most used count is predefined so that I don't store too much unwanted info.
-	private static int MAX_MOST_USED_COUNT = 1000;
-	
-	// if an edge is used more than this number of times, I have check to see if it is most often used.  this is to save time
-	private static int CUT_OFF = 10;
-	
 	// current minimum: the min edge used count in the most used set
-	private int curr_min;
+	private int curr_count;
 	
 	
 	public EdgeUtilization() {
 		edge_utilization_chart = new HashMap<String, Integer>();
-		most_often_used_edges = new HashMap<Integer, HashSet<String>>();
+		most_often_used_edges = new HashSet<String>();
 		most_used_edges_computed = false;
-		curr_min = 0;
+		curr_count = 0;
 	}
 	
 	// path is a sequential list of integers (from, to vertices)
@@ -99,10 +94,7 @@ public class EdgeUtilization {
 		// flip through all edges to determine which ones are most often used
 		for (String k : edge_utilization_chart.keySet()) {
 			Integer cnt = edge_utilization_chart.get(k);
-			
-			if (cnt > CUT_OFF) {
-				qualifyMostUsed(k, cnt);
-			}
+			qualifyMostUsed(k, cnt);
 		}
 		
 		most_used_edges_computed = true;
@@ -117,36 +109,17 @@ public class EdgeUtilization {
 	 */
 	private void qualifyMostUsed(String edge, Integer count) {
 		
+		if (curr_count > count)
+			return;
+		else if (curr_count == count) {
 		// the count is in the most often used set, so one more edge for it
-		if (most_often_used_edges.containsKey(count)) {
-			most_often_used_edges.get(count).add(edge);
+			most_often_used_edges.add(edge);
 		}
-		
-		// if there is still room in the most often used set, add it and update the curr_min
-		else if (most_often_used_edges.size() < MAX_MOST_USED_COUNT) {
-			if (curr_min > count)
-				curr_min = count;
-			
-			HashSet<String> s = new HashSet<String>();
-			s.add(edge);
-			most_often_used_edges.put(count, s);
-		}
-		
-		// no more room, I will only add it if it is greater than curr_min
-		else if (count > curr_min){
-			most_often_used_edges.remove(curr_min);
-			
-			HashSet<String> s = new HashSet<String>();
-			s.add(edge);
-			most_often_used_edges.put(count, s);
-			
-			// need to find the new curr_min
-			curr_min = count;
-			for (Integer i : most_often_used_edges.keySet()) {
-				if (i < curr_min) {
-					curr_min = i;
-				}
-			}
+		else {
+		    // current count is smaller, I need to abandon the edges and restart
+			curr_count = count;
+			most_often_used_edges = new HashSet<String>();
+			most_often_used_edges.add(edge);
 		}
 	}
 	
@@ -184,12 +157,10 @@ public class EdgeUtilization {
 	}
 		
 	public void printMostOftenUsedEdges() {
-		for (Integer k : this.most_often_used_edges.keySet()) {
-			System.out.println("count: " + k);
-			for (String s : this.most_often_used_edges.get(k)) {
+			System.out.println("count: " + curr_count);
+			for (String s : this.most_often_used_edges) {
 				System.out.println(s);
 			}
-		}
 	}	
 	
 	public void saveMostUsedEdges(String filename) {
@@ -198,23 +169,15 @@ public class EdgeUtilization {
 		
 		try {
 			writer = new FileOutputStream(filename);
-			
-			// get all the keys and sort
-			Integer[] all_counts = this.most_often_used_edges.keySet().toArray(new Integer[this.most_often_used_edges.size()]);	
-			Arrays.sort(all_counts);
 
-			int length = all_counts.length;
-			for (int i = 0; i < length; i++) {
-				int index = length -1 -i;
-				s = s + "count " + Integer.toString(all_counts[index]) + ":\n";
+				s = s + "count " + curr_count + ":\n";
 				
-				for (String edge : this.most_often_used_edges.get(all_counts[index])) {
+				for (String edge : this.most_often_used_edges) {
 					s = s + edge + "\n";
 				}
 				
 				writer.write(s.getBytes());
 				s = "";
-			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -227,6 +190,10 @@ public class EdgeUtilization {
 				e.printStackTrace();
 			}
 		}			
+	}
+	
+	public Set<String> getMostUsedEdges() {
+		return this.most_often_used_edges;
 	}
 
 }

@@ -57,6 +57,7 @@ public class CapGraph implements Graph {
 			graphAdjVertex.put(num, new HashSet<Integer>());
 	}
 	
+	// return total number of vertices the graph currently contains
 	public int getNumVertices() {
 		return graphAdjVertex.size();
 	}
@@ -69,7 +70,10 @@ public class CapGraph implements Graph {
 		return graphAdjVertex.keySet();
 	}
 	
-	public void saleVertices(String filename) {
+	/*
+	 * save the vertices to a file
+	 */
+	public void saveVertices(String filename) {
 		
 		FileOutputStream writer = null;
 		
@@ -123,14 +127,18 @@ public class CapGraph implements Graph {
 	/*
 	 * Need to work for both directed and undirected graph
 	 */
-	public boolean removeEdge(int from, int to) {
-		return (graphAdjVertex.get(from).remove(to) || graphAdjVertex.get(to).remove(from));
+	public void removeEdge(int from, int to) {
+		graphAdjVertex.get(from).remove(to);
+		graphAdjVertex.get(to).remove(from);
+		return;
 	}
 	
+	// return immediate connected vertices
 	public Set<Integer> getNeighbours(int v) {
 		return graphAdjVertex.get(v);
 	}
 	
+	// return total number of edges the graph currently has
 	public int getNumEdges() {
 		int total = 0;
 		
@@ -372,7 +380,7 @@ public class CapGraph implements Graph {
 	}
 
 	/*
-	 * Detect Community in undirected graph
+	 * Detect Community in undirected graph using Girvan-Newman algorithm
 	 * 
 	 * The definition of a community is one where there are more connections among members within a community then between
 	 * members of two different communities.
@@ -390,26 +398,46 @@ public class CapGraph implements Graph {
 	 * 6. export the communities as a set of vertices to get characteristics
 	 * 
 	 */
-	public List<Graph> getCommunities() {
+	public List<Graph> detectCommunities(EdgeUtilization edge_utilization, String eu_filename, String mu_filename) {
 		
 		// WHAT IS GOING TO HAPPEN WHEN THERE IS JUST A SINGLE VERTEX IN THE GRAPH?
-		
-		EdgeUtilization edge_utilization = new EdgeUtilization();
+		Set<ArrayList<Integer>> paths = null;
 		
 		// edge_utilization is used to keep track of which edge is used how many times in shortest path between two vertices
-		// one good thing is that the vertices are numbered from 1 sequentially up
+		// one good thing is that the vertices are numbered from 1 sequentially up, but when graph is broken up, it is no longer sequential!!!
+		// I used to do a loop sequentially, it is a bug!
 		// this loops (n-1)! times, n being the number of vertices. O(n!)
-		for (int i = 1; i < this.getNumVertices(); i++) {
-			System.out.println(i);
-			for (int j = i + 1; j <= this.getNumVertices(); j++) {
+		//System.out.println("number of vertices: " + this.getNumVertices());
+
+		for (Integer i : this.getVertices() )  {
+			//System.out.println(i);
+			for (Integer j : this.getVertices()) {
 				
 				// find the shortest path using breath first search
-				//System.out.println(i + ":" + j);
-				BFS(i, j, edge_utilization);
+				// i and j are Integer objects.  If they are pointers, i != j is fine, because they can't be the same object.
+				// if i want to be safe, compare value is ok since no vertex has the same number
+				// ALSO, bidirectional means vertex 1 to 7 and 7 to 1 is the same thing.  So, I can skip half of the computation
+				if (i.compareTo(j) < 0) {
+					//System.out.println(i + ":" + j);
+					paths = BFS(i, j);
+				
+					// update edge utilization chart
+					if (paths != null) {
+						for (ArrayList<Integer> path : paths) {
+							//printPath(path);
+					
+							if (!edge_utilization.processPath(path)) {
+								// best to throw exception.  need to think!
+								System.out.println("edge_utlization processPath failed");
+							}
+						}
+					}
+				}
 			}
 		}
 
-		edge_utilization.saveEdgeUtilizationChart("data/edge_utilization.txt");
+		if (eu_filename != null)
+			edge_utilization.saveEdgeUtilizationChart(eu_filename);
 		
 		//System.out.println("edge utilization chart:");
 		//edge_utilization.printEdgeUtilizationChart();
@@ -419,23 +447,26 @@ public class CapGraph implements Graph {
 		//System.out.println("most often used edges:");
 		//edge_utilization.printMostOftenUsedEdges();
 		
-		edge_utilization.saveMostUsedEdges("data/most_often_used_edges.txt");
+		if (mu_filename != null)
+			edge_utilization.saveMostUsedEdges(mu_filename);
 		
 		return null;
 	}
 	
 	/*
 	 * BFS - breath first search from a starting vertex to an ending vertex for the shortest path(s).
+	 * input: start and end vertices
+	 * output: shortest paths
 	 * Once such a path is found, each path has its edge utilization count incremented by 1.  The objective of doing so
 	 * is that when all combinations of start and end points are investigated by BFS, the most utilized edges are identified as this
 	 * is part of the community identification process.
 	 */
-	public void BFS (Integer start, Integer end, EdgeUtilization eu) {
+	public Set<ArrayList<Integer>> BFS (Integer start, Integer end) {
 		if (start.equals(end))
-			return;
+			return null;
 		
 		if ( !graphAdjVertex.containsKey(start) || (!graphAdjVertex.containsKey(end))  )
-			return;
+			return null;
 		
 		ArrayDeque<Integer> q = new ArrayDeque<Integer>();  // the processing queue that drives it all
 		HashSet<Integer> visited = new HashSet<Integer>();  // visited pretty much just mean i have added it to parent structure
@@ -461,19 +492,8 @@ public class CapGraph implements Graph {
 				 */
 				//System.out.println(parents);
 				
-				shortest_paths = processPaths(start, end, parents);
-				
-				for (ArrayList<Integer> path : shortest_paths) {
-					//System.out.println("start -> end :" + start + " " + end);
-					//printPath(path);
-					
-					if (!eu.processPath(path)) {
-						// best to throw exception.  need to think!
-						System.out.println("edge_utlization processPath failed");
-					}
-				}
-				
-				return;
+				shortest_paths = processPaths(start, end, parents);	
+				return shortest_paths;
 			}
 			
 			if (!visited.contains(curr)) {
@@ -497,6 +517,8 @@ public class CapGraph implements Graph {
 				}
 			}	
 		}
+		
+		return shortest_paths;
 	}
 	
 	
@@ -517,10 +539,12 @@ public class CapGraph implements Graph {
 		// I know for sure s is not g at the very beginning
 		Set<ArrayList<Integer>> built_paths = buildPaths(s, p, paths);
 		
-		return built_paths;
-		
+		return built_paths;		
 	}
 	
+	/*
+	 * TODO: Need to improve on path building by keep a count of how many steps away from the start, so that the shortest can be determined right there.
+	 */
 	/*
 	 * Build Paths recursively taking set of paths built so far, the start vertex, the parent structure to build the next level/layer/step backward.  
 	 * Even though the constructed paths are in reverse order (from end vertex to start), this matters not
@@ -645,6 +669,9 @@ public class CapGraph implements Graph {
 	}
 	
 	/*
+	 * THIS IS AN OBSOLETE METHOD.
+	 * The logic of removing more than just the top count edges is incorrect, because it may distort the situation.
+	 * 
 	 * createCommunities:
 	 * 1. Takes integer N, read most often used edges file to get the edges that are used above N times.
 	 * 2. These edges are removed from the graph to create communities.
@@ -687,14 +714,33 @@ public class CapGraph implements Graph {
 		    }
 		} 
 		catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+	}
+	
+	/*
+	 * removeTopUsedEdges is like the createCommunities, except it is just removing the top used edges
+	 * and the edge usage info comes from the data structure (much better compared from files).
+	 */
+	public boolean removeTopUsedEdges(EdgeUtilization eu) {
+		Set<String> edges = eu.getMostUsedEdges();
+		
+		if (edges.isEmpty())
+			return false;
+		
+		for (String s : edges) {
+System.out.println("top edge is " + s);			
+			String[] p = s.split(",");
+			int from = Integer.parseInt(p[0]);
+			int to = Integer.parseInt(p[1]);
+			this.removeEdge(from, to);
+		}
+		
+		return true;
 	}
 	
 	/* (non-Javadoc)
